@@ -1,6 +1,7 @@
 class MarvelService {
     _apiBase = 'https://gateway.marvel.com:443/v1/public/';
     _apiKey = 'apikey=93aec8f502a9d5e66d216530da84cbfb';
+    _baseOffset = 210;
     getResource = async (url) => {
         let res = await fetch(url);
 
@@ -12,9 +13,9 @@ class MarvelService {
     }
 
 
-    getAllCharacters = async () => {
-        const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=210&${this._apiKey}`);
-        res.data.results.map(this._transformCharacter);
+    getAllCharacters = async (offset = this._baseOffset) => {
+        const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apiKey}`);
+        return res.data.results.map(this._transformCharacter);
     }
 
     getCharacter = async (id) => {
@@ -23,19 +24,15 @@ class MarvelService {
     }
 
     _transformCharacter = (char) => {
-        const test = {
+        return {
+            id: char.id,
             name: char.name,
-            description: char.description,
+            description: char.description ? `${char.description.slice(0, 150)}...` : 'Отсутствуют данные о данном персонаже в базе данных Marvel API',
             thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
             homepage: char.urls[0].url,
-            wiki: char.urls[1].url
+            wiki: char.urls[1].url,
+            comics: char.comics.items
         }
-        if (test.description === '') {
-            test.description = 'Отсутствуют данные о данном персонаже в базе данных Marvel API';
-        } else if (test.description.length > 120) {
-            test.description = test.description.slice(0 , 120) + '...';
-        }
-        return test;
     }
 }
 
